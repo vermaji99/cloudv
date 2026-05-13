@@ -1,0 +1,135 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+:root {
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  @apply bg-slate-50 text-slate-900 m-0 p-0;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+@layer utilities {
+  .scrollbar-thin {
+    scrollbar-width: thin;
+    scrollbar-color: theme('colors.slate.300') transparent;
+  }
+  
+  .scrollbar-thin::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  
+  .scrollbar-thin::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    background-color: theme('colors.slate.300');
+    border-radius: 3px;
+  }
+  
+  .scrollbar-thin::-webkit-scrollbar-thumb:hover {
+    background-color: theme('colors.slate.400');
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply px-6 py-3 bg-accent-600 text-white font-bold rounded-xl shadow-lg shadow-accent-600/20 
+           hover:bg-accent-700 hover:shadow-xl hover:shadow-accent-700/30 
+           active:scale-95 transition-all duration-200 ease-out;
+  }
+  
+  .btn-secondary {
+    @apply px-6 py-3 bg-white text-brand-700 font-bold rounded-xl border-2 border-brand-200
+           hover:border-brand-400 hover:bg-brand-50 
+           active:scale-95 transition-all duration-200 ease-out;
+  }
+  
+  .btn-ghost {
+    @apply px-4 py-2 text-slate-600 font-medium rounded-lg
+           hover:bg-slate-100 hover:text-slate-900
+           active:scale-95 transition-all duration-200;
+  }
+  
+  .card {
+    @apply bg-white rounded-2xl shadow-card border border-slate-100/50;
+  }
+  
+  .card-elevated {
+    @apply bg-white rounded-2xl shadow-elevated border border-slate-100/50;
+  }
+  
+  .input-field {
+    @apply w-full px-4 py-3 border border-slate-200 rounded-xl bg-white
+           focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500
+           placeholder:text-slate-400 transition-all duration-200;
+  }
+  
+  .badge {
+    @apply inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold;
+  }
+  
+  .badge-success {
+    @apply bg-emerald-100 text-emerald-700 border border-emerald-200;
+  }
+  
+  .badge-warning {
+    @apply bg-amber-100 text-amber-700 border border-amber-200;
+  }
+  
+  .badge-error {
+    @apply bg-red-100 text-red-700 border border-red-200;
+  }
+  
+  .badge-info {
+    @apply bg-brand-100 text-brand-700 border border-brand-200;
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.loading-shimmer {
+  background: linear-gradient(90deg, theme('colors.slate.100') 25%, theme('colors.slate.200') 50%, theme('colors.slate.100') 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+.fade-in {
+  animation: fadeIn 0.3s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.slide-up {
+  animation: slideUp 0.4s ease-out;
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
