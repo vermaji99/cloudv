@@ -12,6 +12,9 @@ const metadataRoutes = require('./routes/metadata.routes');
 const app = express();
 const PORT = process.env.PORT || 5000;
 
+// Trust Render's proxy for secure cookies
+app.set('trust proxy', 1);
+
 // Middleware
 const allowedOrigins = [
     process.env.CLIENT_URL || 'http://localhost:5173',

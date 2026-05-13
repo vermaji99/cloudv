@@ -20,10 +20,11 @@ exports.login = (req, res) => {
     const challenge = crypto.createHash('sha256').update(verifier).digest('base64url');
 
     // Store verifier in a short-lived cookie for the callback
+    const isProduction = process.env.NODE_ENV === 'production' || req.get('host').includes('onrender.com');
     res.cookie('code_verifier', verifier, {
         httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+        secure: isProduction,
+        sameSite: isProduction ? 'none' : 'lax',
         path: '/', // Ensure it's available for the callback
         maxAge: 5 * 60 * 1000 // 5 minutes
     });
@@ -103,16 +104,18 @@ exports.callback = async (req, res) => {
             expiresIn: '24h'
         });
 
-        // Set cookie with explicit settings for production/development
+        // Set cookie with robust settings for production/development
+        const isProduction = process.env.NODE_ENV === 'production' || req.get('host').includes('onrender.com');
+        
         res.cookie('token', token, {
             httpOnly: true, 
-            secure: process.env.NODE_ENV === 'production', 
-            sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+            secure: isProduction, 
+            sameSite: isProduction ? 'none' : 'lax',
             path: '/', 
             maxAge: 24 * 60 * 60 * 1000 
         });
 
-        console.log('OAuth Callback - Success! Redirecting to dashboard');
+        console.log('OAuth Callback - Success! Redirecting to dashboard. Production mode:', isProduction);
         // Use hash for redirection to support HashRouter and prevent 404s
         res.redirect(`${process.env.CLIENT_URL}/#/dashboard`);
     } catch (err) {
@@ -186,11 +189,12 @@ exports.getMe = async (req, res) => {
 // @desc    Logout user
 // @route   POST /api/auth/logout
 exports.logout = (req, res) => {
+    const isProduction = process.env.NODE_ENV === 'production' || req.get('host').includes('onrender.com');
     res.cookie('token', 'none', {
         expires: new Date(Date.now() + 10 * 1000),
         httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+        secure: isProduction,
+        sameSite: isProduction ? 'none' : 'lax',
         path: '/'
     });
     res.status(200).json({ success: true, message: 'Logged out' });
