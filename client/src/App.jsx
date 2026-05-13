@@ -11,14 +11,16 @@ const ProtectedRoute = ({ children }) => {
 
     if (loading) {
         return (
-            <div className="min-h-screen flex items-center justify-center">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-salesforce-blue"></div>
+            <div className="min-h-screen flex flex-col items-center justify-center bg-[#011627]">
+                <div className="animate-spin rounded-full h-12 w-12 border-4 border-sky-500/20 border-t-sky-500"></div>
+                <p className="mt-4 text-sky-400 font-bold animate-pulse">Authenticating...</p>
             </div>
         );
     }
 
     if (!user) {
-        return <Navigate to="/login" />;
+        // Use a relative path to avoid /dashboard#/login
+        return <Navigate to="/login" replace />;
     }
 
     return children;
