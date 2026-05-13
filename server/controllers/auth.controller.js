@@ -113,11 +113,12 @@ exports.callback = async (req, res) => {
         });
 
         console.log('OAuth Callback - Success! Redirecting to dashboard');
-        res.redirect(`${process.env.CLIENT_URL}/dashboard`);
+        // Use hash for redirection to support HashRouter and prevent 404s
+        res.redirect(`${process.env.CLIENT_URL}/#/dashboard`);
     } catch (err) {
         console.error('OAuth Callback Error Detail:', err);
         const errorMessage = err.message || 'Authentication failed';
-        res.redirect(`${process.env.CLIENT_URL}/login?error=auth_failed&msg=${encodeURIComponent(errorMessage)}`);
+        res.redirect(`${process.env.CLIENT_URL}/#/login?error=auth_failed&msg=${encodeURIComponent(errorMessage)}`);
     }
 };
 
