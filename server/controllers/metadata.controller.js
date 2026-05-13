@@ -4,6 +4,16 @@ const jsforce = require('jsforce');
 // @route   GET /api/metadata/validation-rules
 exports.getValidationRules = async (req, res) => {
     try {
+        if (!req.user || !req.user.instanceUrl || !req.user.accessToken) {
+            console.error('Metadata Error: Missing user session data', req.user);
+            return res.status(401).json({
+                success: false,
+                message: 'Session expired or invalid. Please login again.'
+            });
+        }
+
+        console.log('Fetching validation rules for:', req.user.username);
+
         const conn = new jsforce.Connection({
             instanceUrl: req.user.instanceUrl,
             accessToken: req.user.accessToken
@@ -26,9 +36,18 @@ exports.getValidationRules = async (req, res) => {
         });
     } catch (err) {
         console.error('Fetch Metadata Error:', err);
+        
+        // Check if it's a Salesforce session error
+        if (err.name === 'INVALID_SESSION_ID' || err.message?.includes('Session expired')) {
+            return res.status(401).json({
+                success: false,
+                message: 'Salesforce session expired. Please login again.'
+            });
+        }
+
         res.status(500).json({
             success: false,
-            message: 'Failed to fetch validation rules'
+            message: err.message || 'Failed to fetch validation rules'
         });
     }
 };
@@ -44,6 +63,13 @@ exports.toggleValidationRule = async (req, res) => {
     }
 
     try {
+        if (!req.user || !req.user.instanceUrl || !req.user.accessToken) {
+            return res.status(401).json({
+                success: false,
+                message: 'Session expired or invalid. Please login again.'
+            });
+        }
+
         const conn = new jsforce.Connection({
             instanceUrl: req.user.instanceUrl,
             accessToken: req.user.accessToken
@@ -80,9 +106,18 @@ exports.toggleValidationRule = async (req, res) => {
         }
     } catch (err) {
         console.error('Update Metadata Error:', err);
+
+        // Check if it's a Salesforce session error
+        if (err.name === 'INVALID_SESSION_ID' || err.message?.includes('Session expired')) {
+            return res.status(401).json({
+                success: false,
+                message: 'Salesforce session expired. Please login again.'
+            });
+        }
+
         res.status(500).json({
             success: false,
-            message: 'Failed to update validation rule'
+            message: err.message || 'Failed to update validation rule'
         });
     }
 };
@@ -99,6 +134,13 @@ exports.bulkUpdateValidationRules = async (req, res) => {
     }
 
     try {
+        if (!req.user || !req.user.instanceUrl || !req.user.accessToken) {
+            return res.status(401).json({
+                success: false,
+                message: 'Session expired or invalid. Please login again.'
+            });
+        }
+
         const conn = new jsforce.Connection({
             instanceUrl: req.user.instanceUrl,
             accessToken: req.user.accessToken
@@ -153,11 +195,19 @@ exports.bulkUpdateValidationRules = async (req, res) => {
             });
         }
     } catch (err) {
-        console.error('Bulk Update Metadata - Global Error:', err);
+        console.error('Bulk Update Metadata Error:', err);
+
+        // Check if it's a Salesforce session error
+        if (err.name === 'INVALID_SESSION_ID' || err.message?.includes('Session expired')) {
+            return res.status(401).json({
+                success: false,
+                message: 'Salesforce session expired. Please login again.'
+            });
+        }
+
         res.status(500).json({
             success: false,
-            message: 'Internal server error during bulk update',
-            error: err.message
+            message: err.message || 'Failed to bulk update validation rules'
         });
     }
 };

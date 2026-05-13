@@ -1,7 +1,7 @@
 import React from 'react';
 import { HashRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
-import { AuthProvider, useAuth } from './context/AuthContext';
+import { useAuth } from './context/AuthContext';
 import LoginPage from './pages/LoginPage';
 import DashboardPage from './pages/DashboardPage';
 
@@ -43,14 +43,12 @@ const AppContent = () => {
 
 function App() {
     return (
-        <AuthProvider>
-            <Router>
-                <div className="min-h-screen bg-slate-50">
-                    <AppContent />
-                    <Toaster position="top-right" />
-                </div>
-            </Router>
-        </AuthProvider>
+        <Router>
+            <div className="min-h-screen bg-slate-50">
+                <AppContent />
+                <Toaster position="top-right" />
+            </div>
+        </Router>
     );
 }
 

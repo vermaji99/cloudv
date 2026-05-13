@@ -41,7 +41,15 @@ const DashboardPage = () => {
                 setInitialRules(JSON.parse(JSON.stringify(response.data)));
             }
         } catch (error) {
-            toast.error('Failed to fetch validation rules');
+            const message = error.response?.data?.message || 'Failed to fetch validation rules';
+            toast.error(message);
+            
+            // If session expired, redirect to login
+            if (error.response?.status === 401) {
+                setTimeout(() => {
+                    logout();
+                }, 2000);
+            }
         } finally {
             setLoading(false);
         }
@@ -93,7 +101,14 @@ const DashboardPage = () => {
                 setInitialRules(JSON.parse(JSON.stringify(rules)));
             }
         } catch (error) {
-            toast.error('Deployment failed', { id: toastId });
+            const message = error.response?.data?.message || 'Deployment failed';
+            toast.error(message, { id: toastId });
+
+            if (error.response?.status === 401) {
+                setTimeout(() => {
+                    logout();
+                }, 2000);
+            }
         } finally {
             setUpdating(false);
         }
