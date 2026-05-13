@@ -21,3 +21,7 @@ services:
       - type: rewrite
         source: /*
         destination: /index.html
+      # Explicitly handle 404s by sending them to index.html
+      - type: rewrite
+        source: /[^.]*
+        destination: /index.html
