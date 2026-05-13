@@ -116,8 +116,14 @@ exports.callback = async (req, res) => {
         });
 
         console.log('OAuth Callback - Success! Redirecting to dashboard. Production mode:', isProduction);
-        // Use hash for redirection to support HashRouter and prevent 404s
-        res.redirect(`${process.env.CLIENT_URL}/#/dashboard`);
+        
+        // On mobile/some browsers, cross-site cookies are blocked. 
+        // We pass the token in the URL as a fallback so the frontend can store it.
+        const redirectUrl = isProduction 
+            ? `${process.env.CLIENT_URL}/#/dashboard?token=${token}`
+            : `${process.env.CLIENT_URL}/#/dashboard`;
+
+        res.redirect(redirectUrl);
     } catch (err) {
         console.error('OAuth Callback Error Detail:', err);
         const errorMessage = err.message || 'Authentication failed';
