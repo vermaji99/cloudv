@@ -22,8 +22,8 @@ exports.login = (req, res) => {
     // Store verifier in a short-lived cookie for the callback
     res.cookie('code_verifier', verifier, {
         httpOnly: true,
-        secure: false,
-        sameSite: 'lax',
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
         path: '/', // Ensure it's available for the callback
         maxAge: 5 * 60 * 1000 // 5 minutes
     });
@@ -57,7 +57,7 @@ exports.callback = async (req, res) => {
     if (!code) {
         console.error('OAuth Callback Error: No code provided');
         const errorMsg = error_description || error || 'No code provided';
-        return res.redirect(`${process.env.CLIENT_URL}/login?error=no_code&msg=${encodeURIComponent(errorMsg)}`);
+        return res.redirect(`${process.env.CLIENT_URL}/#/login?error=no_code&msg=${encodeURIComponent(errorMsg)}`);
     }
 
     try {
@@ -103,11 +103,11 @@ exports.callback = async (req, res) => {
             expiresIn: '24h'
         });
 
-        // Set cookie with explicit settings for development
+        // Set cookie with explicit settings for production/development
         res.cookie('token', token, {
             httpOnly: true, 
-            secure: false, 
-            sameSite: 'lax',
+            secure: process.env.NODE_ENV === 'production', 
+            sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
             path: '/', 
             maxAge: 24 * 60 * 60 * 1000 
         });
@@ -188,8 +188,8 @@ exports.logout = (req, res) => {
     res.cookie('token', 'none', {
         expires: new Date(Date.now() + 10 * 1000),
         httpOnly: true,
-        secure: false,
-        sameSite: 'lax',
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
         path: '/'
     });
     res.status(200).json({ success: true, message: 'Logged out' });
