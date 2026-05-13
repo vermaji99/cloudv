@@ -16,7 +16,9 @@ const PORT = process.env.PORT || 5000;
 const allowedOrigins = [
     process.env.CLIENT_URL || 'http://localhost:5173',
     'http://127.0.0.1:5173',
-    'http://localhost:3000'
+    'http://localhost:3000',
+    'https://cloudv-client.onrender.com',
+    'https://cloudv-client-c1eb.onrender.com'
 ];
 
 app.use(cors({
