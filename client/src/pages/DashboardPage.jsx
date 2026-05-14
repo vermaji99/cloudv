@@ -214,7 +214,7 @@ const DashboardPage = () => {
                 {rules.length > 0 && (
                     <div className="animate-fade-in">
                         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
-                            <div className="flex border-b sm:border-b-0 sm:space-x-1 bg-brand-100 sm:bg-transparent p-1 rounded-xl sm:rounded-none overflow-x-auto scrollbar-none">
+                            <div className="flex border-b sm:border-b-0 sm:space-x-1 bg-slate-100 sm:bg-transparent p-1 rounded-xl sm:rounded-none overflow-x-auto scrollbar-none">
                                 {tabs.map(tab => (
                                     <button
                                         key={tab.id}
@@ -225,8 +225,8 @@ const DashboardPage = () => {
                                             ${activeTab === tab.id
                                                 ? 'bg-blue-700 text-white shadow-md border border-blue-800'
                                                 : tab.disabled
-                                                    ? 'text-brand-400 cursor-not-allowed'
-                                                    : 'text-brand-600 hover:text-brand-900 hover:bg-white/50'
+                                                    ? 'text-slate-400 cursor-not-allowed'
+                                                    : 'text-slate-600 hover:text-slate-900 hover:bg-white/50'
                                             }
                                         `}
                                     >
@@ -246,7 +246,7 @@ const DashboardPage = () => {
                             )}
                         </div>
 
-                        <div className="bg-white rounded-3xl shadow-card border border-brand-200/60 overflow-hidden">
+                        <div className="bg-white rounded-3xl shadow-2xl border border-slate-200 overflow-hidden">
                             <div className="p-5 sm:p-8 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-slate-50/30">
                                 <div className="flex items-center space-x-3">
                                     <h3 className="text-base sm:text-lg font-black text-slate-900 tracking-tight">Account Validation Rules</h3>

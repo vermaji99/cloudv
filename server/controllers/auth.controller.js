@@ -2,34 +2,38 @@ const jsforce = require('jsforce');
 const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
 
-// OAuth2 configuration
-const oauth2 = new jsforce.OAuth2({
-    clientId: process.env.SALESFORCE_CLIENT_ID,
-    clientSecret: process.env.SALESFORCE_CLIENT_SECRET,
-    redirectUri: process.env.SALESFORCE_REDIRECT_URI,
-    loginUrl: process.env.SALESFORCE_LOGIN_URL || 'https://login.salesforce.com'
-});
-
 // @desc    Redirect to Salesforce login
 // @route   GET /api/auth/login
 exports.login = (req, res) => {
-    console.log('Initiating login with Client ID:', process.env.SALESFORCE_CLIENT_ID ? `${process.env.SALESFORCE_CLIENT_ID.substring(0, 5)}...` : 'undefined');
+    const { env } = req.query;
+    const loginUrl = env === 'sandbox' ? 'https://test.salesforce.com' : 'https://login.salesforce.com';
+
+    console.log(`Initiating login for ${env || 'production'} at ${loginUrl}`);
     
+    // Create a dynamic oauth2 object for this request
+    const dynamicOAuth2 = new jsforce.OAuth2({
+        clientId: process.env.SALESFORCE_CLIENT_ID,
+        clientSecret: process.env.SALESFORCE_CLIENT_SECRET,
+        redirectUri: process.env.SALESFORCE_REDIRECT_URI,
+        loginUrl: loginUrl
+    });
+
     // Generate PKCE verifier and challenge
     const verifier = crypto.randomBytes(32).toString('base64url');
     const challenge = crypto.createHash('sha256').update(verifier).digest('base64url');
 
-    // Store verifier in a short-lived cookie for the callback
+    // Store verifier and loginUrl in a short-lived cookie for the callback
     const isProduction = process.env.NODE_ENV === 'production' || req.get('host').includes('onrender.com');
-    res.cookie('code_verifier', verifier, {
+    
+    res.cookie('auth_config', JSON.stringify({ verifier, loginUrl }), {
         httpOnly: true,
         secure: isProduction,
         sameSite: isProduction ? 'none' : 'lax',
-        path: '/', // Ensure it's available for the callback
+        path: '/',
         maxAge: 5 * 60 * 1000 // 5 minutes
     });
 
-    const authUrl = oauth2.getAuthorizationUrl({
+    const authUrl = dynamicOAuth2.getAuthorizationUrl({
         scope: 'full refresh_token offline_access',
         code_challenge: challenge,
         code_challenge_method: 'S256'
@@ -43,7 +47,17 @@ exports.login = (req, res) => {
 // @route   GET /api/auth/callback
 exports.callback = async (req, res) => {
     const { code, error, error_description } = req.query;
-    const code_verifier = req.cookies.code_verifier;
+    const authConfigRaw = req.cookies.auth_config;
+    let authConfig = {};
+    
+    try {
+        if (authConfigRaw) authConfig = JSON.parse(authConfigRaw);
+    } catch (e) {
+        console.error('Failed to parse auth_config cookie');
+    }
+
+    const code_verifier = authConfig.verifier;
+    const loginUrl = authConfig.loginUrl || 'https://login.salesforce.com';
 
     console.log('--- OAuth Callback Debug ---');
     console.log('Full URL:', req.originalUrl);
@@ -53,6 +67,7 @@ exports.callback = async (req, res) => {
         console.error('Description:', error_description);
     }
     console.log('Verifier from cookie present:', !!code_verifier);
+    console.log('Login URL used:', loginUrl);
     console.log('---------------------------');
 
     if (!code) {
@@ -64,27 +79,30 @@ exports.callback = async (req, res) => {
     try {
         console.log('OAuth Callback - Requesting token...');
         
-        // Ensure oauth2 has the latest config
-        const conn = new jsforce.Connection({ oauth2 });
-        
+        // Create a dynamic oauth2 object with the same loginUrl used in the initial request
+        const dynamicOAuth2 = new jsforce.OAuth2({
+            clientId: process.env.SALESFORCE_CLIENT_ID,
+            clientSecret: process.env.SALESFORCE_CLIENT_SECRET,
+            redirectUri: process.env.SALESFORCE_REDIRECT_URI,
+            loginUrl: loginUrl
+        });
+
         // Exchange code for token
-        // In some versions of jsforce, we use conn.authorize(code) or oauth2.requestToken(code)
-        // Let's use oauth2.requestToken but ensure we pass the verifier if we have it
-        const tokenResponse = await oauth2.requestToken(code, { 
+        const tokenResponse = await dynamicOAuth2.requestToken(code, { 
             code_verifier: code_verifier 
         });
         
         console.log('OAuth Callback - Token exchange successful');
         
-        // Clear the verifier cookie
-        res.clearCookie('code_verifier', { path: '/' });
+        // Clear the config cookie
+        res.clearCookie('auth_config', { path: '/' });
 
         // Create a new connection with the received tokens
         const userConn = new jsforce.Connection({ 
             instanceUrl: tokenResponse.instance_url,
             accessToken: tokenResponse.access_token,
             refreshToken: tokenResponse.refresh_token,
-            oauth2: oauth2
+            oauth2: dynamicOAuth2
         });
         
         // Get details about the user and org

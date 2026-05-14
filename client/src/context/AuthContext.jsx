@@ -45,11 +45,11 @@ export const AuthProvider = ({ children }) => {
         fetchUser();
     }, []);
 
-    const login = () => {
+    const login = (environment = 'production') => {
         // Clear old token before starting new login
         localStorage.removeItem('auth_token');
         const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
-        window.location.href = `${API_URL}/auth/login`;
+        window.location.href = `${API_URL}/auth/login?env=${environment}`;
     };
 
     const logout = async () => {

@@ -1,10 +1,11 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useLocation } from 'react-router-dom';
-import { Cloud, ShieldCheck, Zap, AlertCircle, ChevronRight, CheckCircle } from 'lucide-react';
+import { Cloud, ShieldCheck, Zap, AlertCircle, ChevronRight, CheckCircle, Globe } from 'lucide-react';
 
 const LoginPage = () => {
     const { login } = useAuth();
+    const [isSandbox, setIsSandbox] = useState(false);
     const location = useLocation();
     const queryParams = new URLSearchParams(location.search);
     const error = queryParams.get('error');
@@ -94,9 +95,36 @@ const LoginPage = () => {
                             </div>
                         )}
 
+                        <div className="mb-8">
+                            <label className="flex items-center justify-between p-4 bg-slate-50 border border-slate-200 rounded-2xl cursor-pointer hover:bg-slate-100 transition-colors group">
+                                <div className="flex items-center space-x-3">
+                                    <div className={`p-2 rounded-lg transition-colors ${isSandbox ? 'bg-amber-100 text-amber-600' : 'bg-blue-100 text-blue-600'}`}>
+                                        <Globe className="w-5 h-5" />
+                                    </div>
+                                    <div>
+                                        <p className="text-sm font-bold text-slate-900">Environment</p>
+                                        <p className="text-xs text-slate-500 font-medium">{isSandbox ? 'Salesforce Sandbox' : 'Production / Developer Org'}</p>
+                                    </div>
+                                </div>
+                                <div 
+                                    onClick={(e) => {
+                                        e.preventDefault();
+                                        setIsSandbox(!isSandbox);
+                                    }}
+                                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none ${isSandbox ? 'bg-amber-500' : 'bg-blue-600'}`}
+                                >
+                                    <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${isSandbox ? 'translate-x-6' : 'translate-x-1'}`} />
+                                </div>
+                            </label>
+                        </div>
+
                         <button
-                            onClick={login}
-                            className="w-full group flex items-center justify-center space-x-3 px-4 sm:px-6 py-4 bg-[#00a1e0] text-white font-bold rounded-2xl shadow-lg shadow-blue-500/30 hover:shadow-xl hover:shadow-blue-500/40 hover:bg-[#008cc2] active:scale-[0.98] transition-all duration-200"
+                            onClick={() => login(isSandbox ? 'sandbox' : 'production')}
+                            className={`w-full group flex items-center justify-center space-x-3 px-4 sm:px-6 py-4 text-white font-bold rounded-2xl shadow-lg transition-all duration-200 active:scale-[0.98] ${
+                                isSandbox 
+                                    ? 'bg-amber-500 shadow-amber-500/30 hover:shadow-amber-500/40 hover:bg-amber-600' 
+                                    : 'bg-[#00a1e0] shadow-blue-500/30 hover:shadow-xl hover:shadow-blue-500/40 hover:bg-[#008cc2]'
+                            }`}
                         >
                             <svg className="w-5 h-5 sm:w-6 sm:h-6 flex-shrink-0" viewBox="0 0 24 24" fill="currentColor">
                                 <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/>
